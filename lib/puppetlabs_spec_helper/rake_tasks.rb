@@ -71,11 +71,19 @@ task :spec_prep do
     File::exists?(target) || FileUtils::ln_sf(source, target)
   end
 
-  fixtures("forge_modules").each do |source, target|
+  fixtures("forge_modules").each do |remote, opts|
+    if opts.instance_of?(String)
+      target = opts
+      ref = ""
+    elsif opts.instance_of?(Hash)
+      target = opts["target"]
+      ref = "--version #{opts['ref']}"
+    end
     next if File::exists?(target)
-    unless system("puppet module install --ignore-dependencies" \
-                  "--target-dir spec/fixtures/modules #{source}")
-      fail "Failed to install module #{source} to #{target}"
+    unless system("puppet module install " + ref + \
+                  " --ignore-dependencies" \
+                  " --target-dir spec/fixtures/modules #{remote}")
+      fail "Failed to install module #{remote} to #{target}"
     end
   end
 
@@ -94,7 +102,12 @@ task :spec_clean do
     FileUtils::rm_rf(target)
   end
 
-  fixtures("forge_modules").each do |source, target|
+  fixtures("forge_modules").each do |remote, opts|
+    if opts.instance_of?(String)
+      target = opts
+    elsif opts.instance_of?(Hash)
+      target = opts["target"]
+    end
     FileUtils::rm_rf(target)
   end
 
