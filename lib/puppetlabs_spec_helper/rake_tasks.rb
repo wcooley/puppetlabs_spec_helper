@@ -71,6 +71,14 @@ task :spec_prep do
     File::exists?(target) || FileUtils::ln_sf(source, target)
   end
 
+  fixtures("forge_modules").each do |source, target|
+    next if File::exists?(target)
+    unless system("puppet module install " \
+                  "--target-dir spec/fixtures/modules #{source}")
+      fail "Failed to install module #{source} to #{target}"
+    end
+  end
+
   FileUtils::mkdir_p("spec/fixtures/manifests")
   FileUtils::touch("spec/fixtures/manifests/site.pp")
 end
@@ -83,6 +91,10 @@ task :spec_clean do
     elsif opts.instance_of?(Hash)
       target = opts["target"]
     end
+    FileUtils::rm_rf(target)
+  end
+
+  fixtures("forge_modules").each do |source, target|
     FileUtils::rm_rf(target)
   end
 
