@@ -73,7 +73,7 @@ task :spec_prep do
 
   fixtures("forge_modules").each do |source, target|
     next if File::exists?(target)
-    unless system("puppet module install " \
+    unless system("puppet module install --ignore-dependencies" \
                   "--target-dir spec/fixtures/modules #{source}")
       fail "Failed to install module #{source} to #{target}"
     end
